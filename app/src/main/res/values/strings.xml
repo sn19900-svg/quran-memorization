@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    strings.xml — primary string resource file (Arabic / English bilingual).
+    All UI-visible strings are defined here; hardcoded strings in Compose files
+    are only acceptable for purely Arabic Quranic content that cannot be
+    meaningfully translated.
+-->
+<resources>
+    <!-- App -->
+    <string name="app_name">مُذكِّري</string>
+    <string name="app_name_en">Quran Memorization</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">مُذكِّري  •  حفظ القرآن</string>
+    <string name="progress_label">من القرآن الكريم</string>
+    <string name="day_counter">اليوم %1$d / 365</string>
+    <string name="pages_counter">%1$d / 604 صفحة</string>
+
+    <!-- Memorization card -->
+    <string name="memorize_today">حفظ اليوم</string>
+    <string name="start_recitation">بدء التسميع</string>
+    <string name="mark_memorized">✓ تمّ الحفظ</string>
+    <string name="memorized_done">تم الحفظ</string>
+
+    <!-- Review cards -->
+    <string name="recent_review_title">المراجعة القريبة  (آخر ٧ أيام)</string>
+    <string name="distant_review_title">المراجعة البعيدة</string>
+    <string name="review_done">✓ تمّت المراجعة</string>
+    <string name="no_review_today">أحسنت! لا توجد مراجعة مقررة الآن.</string>
+    <string name="review_count">%1$d قطعة للمراجعة</string>
+    <string name="no_review_count">لا يوجد مراجعة اليوم</string>
+
+    <!-- Recitation screen -->
+    <string name="recitation_instructions">اقرأ من حفظك، ثم اضغط على الكلمة للكشف عنها.\nاضغط مرة أخرى لتسجيل خطأ.</string>
+    <string name="reveal_all">كشف الكل</string>
+    <string name="finish_recitation">إنهاء التسميع</string>
+    <string name="save_result">حفظ النتيجة</string>
+    <string name="repeat_session">إعادة</string>
+    <string name="mistakes_count">الأخطاء: %1$d من %2$d كلمة</string>
+
+    <!-- Loading / error -->
+    <string name="loading_schedule">جارٍ تحميل الجدول…</string>
+    <string name="error_loading">تعذّر تحميل مهمة اليوم. أعد تشغيل التطبيق.</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">تذكير الحفظ اليومي</string>
+    <string name="notification_channel_desc">تذكير يومي بموعد ورد حفظ القرآن الكريم</string>
+    <string name="notification_title">مُذكِّري — ورد القرآن اليومي</string>
+
+    <!-- FAB -->
+    <string name="fab_recite">تسميع</string>
+</resources>

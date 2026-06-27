@@ -1,0 +1,116 @@
+# .github/workflows/build.yml
+# Automated CI/CD pipeline: builds a debug APK on every push to main,
+# and a signed release APK on version tags (v*.*.*).
+
+name: Build & Release APK
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+    tags:     [ "v*.*.*" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  JAVA_VERSION:  "17"
+  JAVA_DISTRO:   "temurin"
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 1: Build debug APK (runs on every push / PR)
+  # ──────────────────────────────────────────────────────────────────────────
+  build-debug:
+    name: Build Debug APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRO }}
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run unit tests
+        run: ./gradlew testDebugUnitTest --no-daemon
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload debug APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: quran-memorization-debug-${{ github.sha }}
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 14
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 2: Build & sign release APK (runs only on version tags)
+  # Requires repository secrets:
+  #   KEYSTORE_BASE64   — base64-encoded .jks keystore file
+  #   KEY_ALIAS         — key alias inside the keystore
+  #   KEY_PASSWORD      — key password
+  #   STORE_PASSWORD    — keystore password
+  # ──────────────────────────────────────────────────────────────────────────
+  build-release:
+    name: Build Signed Release APK
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build-debug
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRO }}
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/release.jks
+
+      - name: Build signed release APK
+        env:
+          STORE_FILE:     release.jks
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_ALIAS:      ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD:   ${{ secrets.KEY_PASSWORD }}
+        run: |
+          ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file="$GITHUB_WORKSPACE/app/$STORE_FILE" \
+            -Pandroid.injected.signing.store.password="$STORE_PASSWORD" \
+            -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$KEY_PASSWORD" \
+            --no-daemon
+
+      - name: Extract version name
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.VERSION }}
+          name: "Quran Memorization ${{ steps.version.outputs.VERSION }}"
+          draft: false
+          prerelease: false
+          files: app/build/outputs/apk/release/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Clean up keystore
+        if: always()
+        run: rm -f app/release.jks

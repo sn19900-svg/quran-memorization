@@ -1,0 +1,12 @@
+whisper.cpp-master/
+*.zip
+*.mp3
+/build
+/app/build
+/.gradle
+local.properties
+*.jks
+*.keystore
+.idea/
+*.iml
+.DS_Store

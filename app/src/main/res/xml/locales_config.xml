@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    locales_config.xml — tells Android which locales the app natively supports.
+    Required for the per-app language preference feature (Android 13+).
+    Reference in AndroidManifest via android:localeConfig="@xml/locales_config".
+-->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="ar" />   <!-- Arabic — primary UI language -->
+    <locale android:name="en" />   <!-- English — fallback / developer locale -->
+</locale-config>
