@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    colors.xml — raw colour values.
-    The Compose theme (Theme.kt) references these same hex values directly;
-    this file exists only to serve the XML-based splash / window background.
--->
 <resources>
     <color name="parchment">#F8F4EE</color>
     <color name="teal_900">#1A5C4F</color>
     <color name="gold_600">#C9A84C</color>
     <color name="dark_surface">#1A1C1E</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
 </resources>
