@@ -1,24 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    themes.xml — only the splash screen theme is defined here.
-    All runtime theming is handled by Compose's QuranMemorizationTheme.
--->
 <resources>
-    <!-- Base theme: no action bar; window background matches parchment -->
     <style name="Theme.QuranMemorization" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@color/parchment</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">true</item>
     </style>
 
-    <!-- Splash screen theme: uses the core-splashscreen library -->
-    <style name="Theme.QuranMemorization.SplashScreen" parent="Theme.SplashScreen">
-        <!-- Icon shown on the splash — replace with the real app icon vector -->
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_quran</item>
-        <!-- Background colour while the icon is shown -->
-        <item name="windowSplashScreenBackground">@color/parchment</item>
-        <!-- Theme to switch to after the splash exits -->
-        <item name="postSplashScreenTheme">@style/Theme.QuranMemorization</item>
+    <style name="Theme.QuranMemorization.SplashScreen" parent="Theme.QuranMemorization">
     </style>
 </resources>
