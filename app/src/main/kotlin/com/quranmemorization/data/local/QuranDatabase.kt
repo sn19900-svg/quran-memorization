@@ -1,6 +1,5 @@
 package com.quranmemorization.data.local
 
-import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -12,19 +11,10 @@ import com.quranmemorization.data.local.entity.MistakeLog
 import com.quranmemorization.data.local.entity.QuranSchedule
 import com.quranmemorization.data.local.entity.UserProgress
 
-/**
- * QuranDatabase — single Room database for the entire application.
- *
- * Version history:
- *  v1 — Initial schema: quran_schedule, user_progress, mistake_log
- *
- * The database is created lazily (first access) and lives in the app's
- * private storage.  Hilt provides the singleton via [DatabaseModule].
- */
 @Database(
     entities  = [QuranSchedule::class, UserProgress::class, MistakeLog::class],
     version   = 1,
-    exportSchema = true,   // schema JSON exported to app/schemas/ for migration auditing
+    exportSchema = false,
 )
 @TypeConverters(Converters::class)
 abstract class QuranDatabase : RoomDatabase() {
@@ -38,12 +28,7 @@ abstract class QuranDatabase : RoomDatabase() {
     }
 }
 
-/**
- * Converters — Room type converters for enums stored as strings.
- * Storing as strings (not ordinals) is safer across schema migrations.
- */
 class Converters {
-    // MistakeLog.MistakeType
     @androidx.room.TypeConverter
     fun mistakeTypeToString(value: MistakeLog.MistakeType): String = value.name
 
@@ -51,7 +36,6 @@ class Converters {
     fun stringToMistakeType(value: String): MistakeLog.MistakeType =
         MistakeLog.MistakeType.valueOf(value)
 
-    // MistakeLog.SessionType
     @androidx.room.TypeConverter
     fun sessionTypeToString(value: MistakeLog.SessionType): String = value.name
 
