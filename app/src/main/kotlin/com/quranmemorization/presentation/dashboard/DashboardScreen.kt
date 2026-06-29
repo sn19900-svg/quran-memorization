@@ -65,7 +65,7 @@ fun DashboardScreen(
     val uiState       by viewModel.uiState.collectAsStateWithLifecycle()
     val sheetState    by viewModel.recitationSheet.collectAsStateWithLifecycle()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val bottomSheet    = rememberModalBottomSheetState(skipPartialExpansion = true)
+    val bottomSheet    = rememberModalBottomSheetState()
 
     Scaffold(
         modifier        = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
