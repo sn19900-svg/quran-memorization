@@ -44,19 +44,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.quranmemorization.presentation.components.MemorizationTaskCard
 import com.quranmemorization.presentation.components.ProgressHeader
 import com.quranmemorization.presentation.components.ReviewWardCard
-import com.quranmemorization.presentation.recitation.RecitationScreen
+import com.quranmemorization.presentation.recitation.VoiceRecitationScreen
 
-/**
- * DashboardScreen — the root screen of the app.
- *
- * Renders three states:
- *  • Loading  → full-screen spinner while DB seeds and day is resolved
- *  • Error    → Arabic error message with retry hint
- *  • Success  → progress header + task cards + review cards + FAB
- *
- * The interactive recitation / self-testing flow is presented as a
- * [ModalBottomSheet] so the user never loses their place on the dashboard.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
@@ -110,8 +99,6 @@ fun DashboardScreen(
             modifier      = Modifier.padding(innerPadding),
         ) { state ->
             when (state) {
-
-                // ── Loading ───────────────────────────────────────────────────
                 is DashboardUiState.Loading -> {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -129,8 +116,6 @@ fun DashboardScreen(
                         }
                     }
                 }
-
-                // ── Error ─────────────────────────────────────────────────────
                 is DashboardUiState.Error -> {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Column(
@@ -156,26 +141,20 @@ fun DashboardScreen(
                         }
                     }
                 }
-
-                // ── Success ───────────────────────────────────────────────────
                 is DashboardUiState.Success -> {
-                    DashboardContent(
-                        state     = state,
-                        viewModel = viewModel,
-                    )
+                    DashboardContent(state = state, viewModel = viewModel)
                 }
             }
         }
     }
 
-    // ── Recitation Bottom Sheet ───────────────────────────────────────────────
     if (sheetState.isVisible) {
         ModalBottomSheet(
             onDismissRequest  = { viewModel.onDismissRecitationSheet() },
             sheetState        = bottomSheet,
             containerColor    = MaterialTheme.colorScheme.surface,
         ) {
-            RecitationScreen(
+            VoiceRecitationScreen(
                 dayNumber   = sheetState.dayNumber,
                 sessionType = sheetState.sessionType,
                 onDismiss   = { viewModel.onDismissRecitationSheet() },
@@ -183,8 +162,6 @@ fun DashboardScreen(
         }
     }
 }
-
-// ── Content (Success State) ───────────────────────────────────────────────────
 
 @Composable
 private fun DashboardContent(
@@ -201,16 +178,10 @@ private fun DashboardContent(
         contentPadding      = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-
-        // ── Progress header ───────────────────────────────────────────────────
         item(key = "progress_header") {
-            ProgressHeader(
-                dayNumber = state.todayDayNumber,
-                progress  = progress,
-            )
+            ProgressHeader(dayNumber = state.todayDayNumber, progress = progress)
         }
 
-        // ── Greeting / motivational line ──────────────────────────────────────
         item(key = "greeting") {
             Text(
                 text  = motivationalArabicGreeting(state.todayDayNumber),
@@ -223,7 +194,6 @@ private fun DashboardContent(
             )
         }
 
-        // ── Today's memorization card ─────────────────────────────────────────
         item(key = "memorization_card") {
             MemorizationTaskCard(
                 task          = task,
@@ -232,7 +202,6 @@ private fun DashboardContent(
             )
         }
 
-        // ── Recent review ward ────────────────────────────────────────────────
         item(key = "recent_review") {
             ReviewWardCard(
                 title      = "المراجعة القريبة  (آخر ٧ أيام)",
@@ -242,7 +211,6 @@ private fun DashboardContent(
             )
         }
 
-        // ── Distant review ward ───────────────────────────────────────────────
         item(key = "distant_review") {
             ReviewWardCard(
                 title      = "المراجعة البعيدة",
@@ -252,14 +220,10 @@ private fun DashboardContent(
             )
         }
 
-        // Bottom padding for FAB clearance
         item { Spacer(Modifier.height(80.dp)) }
     }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-/** Returns a short motivational Arabic phrase based on the day of the journey. */
 private fun motivationalArabicGreeting(dayNumber: Int): String = when {
     dayNumber == 1   -> "مرحباً بك في أول يوم من رحلتك مع كتاب الله 🌟"
     dayNumber <= 7   -> "ما شاء الله، أسبوع كامل من المثابرة!"
