@@ -10,3 +10,5 @@ local.properties
 .idea/
 *.iml
 .DS_Store
+keystore_base64.txt
+*.jks
