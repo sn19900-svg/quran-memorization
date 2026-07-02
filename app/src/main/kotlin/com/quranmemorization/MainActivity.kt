@@ -14,53 +14,38 @@ import androidx.navigation.compose.rememberNavController
 import com.quranmemorization.presentation.dashboard.DashboardScreen
 import com.quranmemorization.presentation.theme.QuranMemorizationTheme
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.File
 
-/**
- * MainActivity — single-activity host for the entire Compose navigation graph.
- *
- * Responsibilities:
- *  • Install the splash screen (shows while Hilt + DB initialise).
- *  • Enable edge-to-edge rendering for modern Android look.
- *  • Set up the NavHost with all top-level destinations.
- */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Must be called before super.onCreate() so the splash is shown
-        // during the first DB seed on a fresh install.
         installSplashScreen()
-
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // تحقق إذا كان هناك crash log من جلسة سابقة
+        val crashLog = File(filesDir, "crash_log.txt")
+        if (crashLog.exists()) {
+            val errorText = crashLog.readText()
+            crashLog.delete()
+            CrashActivity.launch(this, errorText)
+            finish()
+            return
+        }
 
         setContent {
             QuranMemorizationTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val navController = rememberNavController()
-
                     NavHost(
                         navController    = navController,
-                        startDestination = NavRoutes.DASHBOARD,
+                        startDestination = "dashboard",
                     ) {
-                        composable(NavRoutes.DASHBOARD) {
-                            DashboardScreen()
-                        }
-                        // Future destinations:
-                        // composable(NavRoutes.SCHEDULE)  { ScheduleScreen(navController) }
-                        // composable(NavRoutes.STATISTICS){ StatisticsScreen(navController) }
-                        // composable(NavRoutes.SETTINGS)  { SettingsScreen(navController) }
+                        composable("dashboard") { DashboardScreen() }
                     }
                 }
             }
         }
     }
-}
-
-/** Centralised navigation route constants — avoids magic strings across the codebase. */
-object NavRoutes {
-    const val DASHBOARD  = "dashboard"
-    const val SCHEDULE   = "schedule"
-    const val STATISTICS = "statistics"
-    const val SETTINGS   = "settings"
 }
