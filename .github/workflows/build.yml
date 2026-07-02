@@ -1,4 +1,4 @@
-name: Build Debug APK
+name: Build & Release APK
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build Debug APK
+    name: Build Signed Release APK
     runs-on: ubuntu-latest
 
     steps:
@@ -21,7 +21,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Install Gradle 8.7
+      - name: Setup Gradle 8.7
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.7'
@@ -32,12 +32,38 @@ jobs:
       - name: Grant execute permission
         run: chmod +x gradlew
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/release.jks
 
-      - name: Upload APK
+      - name: Build Release APK (موقّع بتوقيع دائم)
+        env:
+          KEYSTORE_PATH: release.jks
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Get version name
+        id: version
+        run: |
+          VERSION=$(grep 'versionName' app/build.gradle.kts | sed 's/.*"\(.*\)".*/\1/')
+          BUILD=$(grep 'versionCode' app/build.gradle.kts | sed 's/[^0-9]//g')
+          echo "VERSION_NAME=$VERSION" >> $GITHUB_OUTPUT
+          echo "BUILD_NUMBER=$BUILD" >> $GITHUB_OUTPUT
+
+      - name: Rename APK
+        run: |
+          mv app/build/outputs/apk/release/app-release.apk \
+             app/build/outputs/apk/release/quran-memorization-v${{ steps.version.outputs.VERSION_NAME }}.apk
+
+      - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: quran-memorization-debug
-          path: app/build/outputs/apk/debug/*.apk
-          retention-days: 30
+          name: quran-memorization-v${{ steps.version.outputs.VERSION_NAME }}
+          path: app/build/outputs/apk/release/*.apk
+          retention-days: 90
+
+      - name: Clean up keystore
+        if: always()
+        run: rm -f app/release.jks
