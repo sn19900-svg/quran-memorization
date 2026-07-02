@@ -3,8 +3,6 @@ name: Build & Release APK
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
   build:
@@ -35,32 +33,26 @@ jobs:
       - name: Decode keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/release.jks
+          echo "Keystore size: $(wc -c < app/release.jks) bytes"
 
-      - name: Build Release APK (موقّع بتوقيع دائم)
-        env:
-          KEYSTORE_PATH: release.jks
-          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: ./gradlew assembleRelease --no-daemon
-
-      - name: Get version name
-        id: version
+      - name: Verify keystore
         run: |
-          VERSION=$(grep 'versionName' app/build.gradle.kts | sed 's/.*"\(.*\)".*/\1/')
-          BUILD=$(grep 'versionCode' app/build.gradle.kts | sed 's/[^0-9]//g')
-          echo "VERSION_NAME=$VERSION" >> $GITHUB_OUTPUT
-          echo "BUILD_NUMBER=$BUILD" >> $GITHUB_OUTPUT
+          keytool -list -keystore app/release.jks \
+            -storepass "${{ secrets.STORE_PASSWORD }}" \
+            -alias "${{ secrets.KEY_ALIAS }}"
 
-      - name: Rename APK
+      - name: Build Release APK
         run: |
-          mv app/build/outputs/apk/release/app-release.apk \
-             app/build/outputs/apk/release/quran-memorization-v${{ steps.version.outputs.VERSION_NAME }}.apk
+          ./gradlew assembleRelease --no-daemon \
+            -Pandroid.injected.signing.store.file="$GITHUB_WORKSPACE/app/release.jks" \
+            -Pandroid.injected.signing.store.password="${{ secrets.STORE_PASSWORD }}" \
+            -Pandroid.injected.signing.key.alias="${{ secrets.KEY_ALIAS }}" \
+            -Pandroid.injected.signing.key.password="${{ secrets.KEY_PASSWORD }}"
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: quran-memorization-v${{ steps.version.outputs.VERSION_NAME }}
+          name: quran-memorization-release
           path: app/build/outputs/apk/release/*.apk
           retention-days: 90
 
